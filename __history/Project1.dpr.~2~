@@ -1,0 +1,15 @@
+program Project1;
+
+uses
+  Vcl.Forms,
+  Unit1 in 'Unit1.pas' {Form1},
+  OKCANCL1 in 'c:\program files (x86)\embarcadero\studio\22.0\ObjRepos\DE\DelphiWin32\OKCANCL1.PAS' {OKBottomDlg};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TForm1, Form1);
+  Application.Run;
+end.

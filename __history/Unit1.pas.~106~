@@ -1,0 +1,214 @@
+unit Unit1;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Math, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.Menus, System.DateUtils, Printers, NameChange;
+
+type
+  TForm1 = class(TForm)
+    Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    Label6: TLabel;
+    Edit1: TEdit;
+    Edit2: TEdit;
+    Edit3: TEdit;
+    Edit4: TEdit;
+    Edit5: TEdit;
+    Edit6: TEdit;
+    Memo1: TMemo;
+    Button1: TButton;
+    Button2: TButton;
+    Label7: TLabel;
+    Shape1: TShape;
+    Label8: TLabel;
+    Label9: TLabel;
+    Label10: TLabel;
+    Label11: TLabel;
+    Label12: TLabel;
+    Button3: TButton;
+    MainMenu1: TMainMenu;
+    Extras2: TMenuItem;
+    PrintDialog1: TPrintDialog;
+    Button4: TButton;
+    Extras1: TMenuItem;
+    Extras3: TMenuItem;
+    Sloganndern1: TMenuItem;
+    Info1: TMenuItem;
+    N1: TMenuItem;
+    procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Button3Click(Sender: TObject);
+    procedure Extras2Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure Extras3Click(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+
+
+  private
+    { Private-Deklarationen }
+  public
+    { Public-Deklarationen }
+  end;
+
+var
+  Form1: TForm1;
+  Total: real;
+  Summe: real;
+  Währung: string;
+  RECHUNGSID: integer;
+  CompanyName: string;
+  Slogan: string;
+implementation
+
+{$R *.dfm}
+
+procedure PrintMemo(Memo: TMemo);
+var
+  i: integer;
+begin
+  Printer.BeginDoc;
+  try
+    for i := 0 to Memo.Lines.Count - 1 do
+      Printer.Canvas.TextOut(0, i * Printer.Canvas.TextHeight(Memo.Lines[i]),
+        Memo.Lines[i]);
+  finally
+    Printer.EndDoc;
+  end;
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);
+var
+  summand: real;
+begin
+  if Edit1.Text = EmptyStr then
+  begin
+    Exit;
+  end;
+
+  summand := StrToFloat(Edit1.Text);
+
+  if summand <= 0 then
+  begin
+    ShowMessage('Summe muss größer als 0 sein.');
+    Exit;
+  end;
+
+  Edit1.Clear;
+  Total := Total + summand;
+  Memo1.Lines.Add(FloatToStr(summand) + ' €');
+  Edit2.Text := FloatToStr(Total);
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+var
+  Bar, Rückgeld, Mwst, Differenz: real;
+  Datum: TDate;
+  Time: TTime;
+
+begin
+  Mwst := StrToFloat(Edit3.Text);
+  Bar := StrToFloat(Edit5.Text);
+
+  if Total > Bar then
+  begin
+    Differenz := Total - Bar;
+
+    ShowMessage('Zu wenig. Bitte zahlen Sie noch ' +
+      FloatToStr(RoundTo(Abs(Differenz), -2)) + '€');
+    Exit;
+  end;
+
+  Edit4.Text := FloatToStr(RoundTo(Total / (Mwst / 100 + 1), -2));
+  Rückgeld := Bar - Total;
+
+  Memo1.Lines.Add('------------');
+  Memo1.Lines.Add('Summe: ' + FloatToStr(RoundTo(Total, -2)) + '€');
+  Memo1.Lines.Add('======');
+  Memo1.Lines.Add('Mwst: ' + FloatToStr(Mwst) + '%');
+  Memo1.Lines.Add('Netto: ' + FloatToStr(RoundTo(Total / ((Mwst / 100) + 1),
+    -2)) + ' €');
+  Memo1.Lines.Add('Transaktion: ' + IntToStr(RECHUNGSID));
+  RECHUNGSID := RECHUNGSID + 1;
+  Memo1.Lines.Add('======');
+  Memo1.Lines.Add('Zahlungsmetode: Bar');
+  Memo1.Lines.Add('Bar: ' + FloatToStr(Bar) + '€');
+  Memo1.Lines.Add('Rückgled: ' + FloatToStr(RoundTo(Rückgeld, -2)) + '€');
+  Memo1.Lines.Add('======');
+  Memo1.Lines.Add('Danke für ihren Einkauf');
+  Memo1.Lines.Add('Datum/Urzeit: ' + FormatDateTime('dd.mm.yyyy, hh:nn:ss', now)
+    + ' Uhr');
+  Memo1.Lines.Add('======');
+
+  Edit6.Text := FloatToStr(RoundTo(Rückgeld, -2));
+
+end;
+
+procedure TForm1.Button3Click(Sender: TObject);
+begin
+  Total := 0;
+  Edit1.Clear;
+  Edit2.Clear;
+  Edit3.Clear;
+  Edit4.Clear;
+  Edit5.Clear;
+  Edit6.Clear;
+  Memo1.Clear;
+  Memo1.Lines.Add(CompanyName);
+  Memo1.Lines.Add('== '+Slogan+' ==');
+  Memo1.Lines.Add('');
+  Memo1.Lines.Add('Bon');
+end;
+
+procedure TForm1.Button4Click(Sender: TObject);
+var
+  i: integer;
+begin
+  if PrintDialog1.Execute then
+  begin
+    Printer.BeginDoc;
+    for i := 0 to Memo1.Lines.Count - 1 do
+      Printer.Canvas.TextOut(0, i * Printer.Canvas.TextHeight(Memo1.Lines[i]),
+        Memo1.Lines[i]);
+    Printer.EndDoc
+  end;
+
+end;
+
+procedure TForm1.Extras2Click(Sender: TObject);
+begin
+  if MessageDlg('Möchten Sie das Programm beenden?', mtConfirmation,
+    [mbYes, mbNo], 0, mbYes) = mrYes then
+  begin
+    MessageDlg('Programm wird beendet.', mtInformation, [mbOk], 0, mbOk);
+    Application.Terminate;
+  end;
+end;
+
+procedure TForm1.Extras3Click(Sender: TObject);
+begin
+  OKRightDlg.Caption := 'Ladenname ändern.';
+  OKRightDlg.Show;
+  if (OKRightDlg.Active) then
+  begin
+
+  end;
+  CompanyName := OKRightDlg.Result;
+  OKRightDlg.Close;
+end;
+
+
+
+procedure TForm1.FormShow(Sender: TObject);
+begin
+CompanyName:= 'LADEN NAMEN';
+Slogan := 'SLOGAN';
+end;
+
+end.
